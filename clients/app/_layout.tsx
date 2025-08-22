@@ -11,6 +11,7 @@ import { UserProvider } from '@/providers/UserProvider';
 
 
 import { useColorScheme } from "@/hooks/useColorScheme";
+import FloatingChatButton from "@/components/FloatingChatButton";
 import ShakeDetector from "@/components/MyShakeComponent ";
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -36,11 +37,13 @@ export default function RootLayout() {
           <Stack.Screen options={{ headerShown: false }} name="food_scanner" />
           <Stack.Screen options={{ headerShown: false }} name="emergency-profile" />
           <Stack.Screen options={{ headerShown: false }} name="health_setup" />
+          <Stack.Screen options={{ headerShown: false }} name="medibot" />
         </Stack>
       </UserProvider>
 
  
       <StatusBar style="light" />
+      <FloatingChatButton />
     </>
     // </ThemeProvider>
   );
