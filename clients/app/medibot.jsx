@@ -6,7 +6,7 @@ import { ThemedView } from '../components/ThemedView';
 import { ThemedText } from '../components/ThemedText';
 import { Stack } from 'expo-router';
 
-const MEDIBOT_API_ENDPOINT = 'YOUR_MEDIBOT_API_ENDPOINT_HERE'; // TODO: Replace with your actual API endpoint
+const MEDIBOT_API_ENDPOINT = 'https://medvault-chatbot.onrender.com/api/chat'; 
 
 export default function MediBotChatScreen() {
   const [messages, setMessages] = useState([]);
