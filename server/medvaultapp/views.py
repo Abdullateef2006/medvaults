@@ -1065,4 +1065,68 @@ class GetVerifiedHospitals(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+# views.py
+import os
+from openai import OpenAI
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from .serializers import EmergencyProfileSerializer
 
+
+client = OpenAI(api_key="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")
+
+# Initialize OpenAI client
+class GenerateHealthTipsAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+    serializer_class = EmergencyProfileSerializer
+
+    def post(self, request, *args, **kwargs):
+        # Get the logged-in user's profile
+        try:
+            profile = request.user.emergencyprofile
+        except AttributeError:
+            return Response(
+                {"error": "No emergency profile found for this user."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Serialize profile
+        serializer = self.serializer_class(profile)
+        profile_data = "\n".join([f"{k}: {v}" for k, v in serializer.data.items()])
+
+        # Prompt for AI
+        prompt = f"""
+        You are a medical assistant. Generate 3 short, safe, and general health tips 
+        for a patient with the following profile:
+
+        {profile_data}
+
+        Make the tips simple, practical, and easy to follow.
+        """
+
+        try:
+            # Call new OpenAI API (chat completion)
+            response = client.chat.completions.create(
+                model="gpt-4o-mini",  # faster + cheaper, you can use gpt-4 if needed
+                messages=[
+                    {"role": "system", "content": "You are a helpful medical assistant."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=200,
+                temperature=0.7
+            )
+
+            raw_text = response.choices[0].message.content.strip()
+            tips = [tip.strip(" -•") for tip in raw_text.split("\n") if tip.strip()]
+
+            return Response(
+                {"profile": serializer.data, "tips": tips},
+                status=status.HTTP_200_OK
+            )
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -28,6 +28,7 @@ urlpatterns = [
     path("hospital/verified_hospitals/", GetVerifiedHospitals.as_view(), name="verified_hospitals"),
     path('qr/activate/', ActivateQRCodeView.as_view()),
     path('emergency/<uuid:token>/', QRCodeStatusPublicView.as_view()),  
+    path("generate_health_tip", GenerateHealthTipsAPIView.as_view() )
 
 
 
