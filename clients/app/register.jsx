@@ -515,17 +515,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   linkText: {
-    color: "#a855f7",
+    color: "#009b7c",
     fontWeight: "600",
   },
   registerButton: {
-    backgroundColor: "#a855f7",
+    backgroundColor: "#009b7c",
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 24,
-    shadowColor: "#a855f7",
+    shadowColor: "#009b7c",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -598,7 +598,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   signInText: {
-    color: "#a855f7",
+    color: "#009b7c",
     fontWeight: "600",
   },
   privacyNotice: {

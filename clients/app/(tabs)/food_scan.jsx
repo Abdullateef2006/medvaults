@@ -89,7 +89,7 @@ const QRCodeComponent = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#a855f7" />
+        <ActivityIndicator size="large" color="#009b7c" />
         <Text style={styles.loadingText}>Loading QR Code...</Text>
       </View>
     );
@@ -115,7 +115,7 @@ const QRCodeComponent = () => {
         {/* QR Code Section Header */}
         <View style={styles.sectionHeader}>
           <View style={[styles.sectionIcon, { backgroundColor: '#f5f3ff' }]}>
-            <MaterialIcons name="qr-code" size={20} color="#8b5cf6" />
+            <MaterialIcons name="qr-code" size={20} color="#009b7c" />
           </View>
           <Text style={styles.sectionTitle}>Emergency QR Code</Text>
         </View>
@@ -137,7 +137,7 @@ const QRCodeComponent = () => {
             {/* Action Buttons */}
             <View style={styles.actionButtons}>
               <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: '#8b5cf6' }]}
+                style={[styles.actionButton, { backgroundColor: '#009b7c' }]}
                 onPress={saveQRCode}
               >
                 <MaterialIcons name="save-alt" size={20} color="#fff" />
@@ -217,7 +217,7 @@ const styles = StyleSheet.create({
     marginVertical: 16,
   },
   retryButton: {
-    backgroundColor: '#a855f7',
+    backgroundColor: '#009b7c',
     borderRadius: 8,
     paddingVertical: 12,
     paddingHorizontal: 24,

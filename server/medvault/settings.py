@@ -62,20 +62,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'medvault.urls'
 
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
+# TEMPLATES is defined below after os import
 
 WSGI_APPLICATION = 'medvault.wsgi.application'
 
@@ -125,8 +112,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
@@ -165,12 +150,12 @@ TEMPLATES = [
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
-         'rest_framework.permissions.AllowAny', 
+        'rest_framework.permissions.AllowAny',
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
- 
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 
@@ -195,10 +180,7 @@ cloudinary.config(
 
 
 
-REST_FRAMEWORK = {
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    # other configurations
-}
+# REST_FRAMEWORK is defined above with all configurations merged
 
 
 
@@ -232,12 +214,16 @@ EMAIL_PORT = 587  # e.g., 587 for TLS, 465 for SSL
 EMAIL_USE_TLS = True  # Set to False if you use SSL
 EMAIL_USE_SSL = False  # Set to True if you use SSL
 EMAIL_HOST_USER = 'ojugbelelateef2006@gmail.com'
-EMAIL_HOST_PASSWORD = 'yshhvvigaryqlabg'
+EMAIL_HOST_PASSWORD = 'hpttakizgivmzabp'
 DEFAULT_FROM_EMAIL = 'ojugbelelateef2006@gmail.com'  # Default "from" email
 ADMIN_NOTIFICATION_EMAIL = 'ojugbelelateef2006@gmail.com'  # Website owner's email
 ADMIN_EMAIL = 'ojugbelelateef2006@gmail.com'  # Add this line for admin email
 CSRF_TRUSTED_ORIGINS = [
-    'http://192.168.16.197:8000/',
+    'http://127.0.0.1:8000',
+    'http://localhost:8000',
+    'http://127.0.0.1:8001',
+    'http://localhost:8001',
+    'http://192.168.*:*',
 ]
 
 
@@ -256,8 +242,11 @@ PAYSTACK_SECRET_KEY = 'sk_test_2de22e65cd85be13d98741474297a8e5bf84dcf5'
 import os
 from dotenv import load_dotenv
 
-load_dotenv()  # Load environment variables from .env file
+load_dotenv(override=True)  # Load environment variables from .env file (override to ensure updates apply)
 
 TWILIO_ACCOUNT_SID = os.getenv('TWILIO_ACCOUNT_SID')
 TWILIO_AUTH_TOKEN = os.getenv('TWILIO_AUTH_TOKEN')
 TWILIO_PHONE_NUMBER = os.getenv('TWILIO_PHONE_NUMBER')
+
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')

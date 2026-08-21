@@ -255,20 +255,52 @@ class FoodAllergyScanView(APIView):
             )
 
             try:
-                # Determine food name
+                # Determine food name and allergen
                 if scan.food_image:
                     image_url = scan.food_image.url
                     image_result = nyckel.invoke("meals-identifier", image_url, credentials)
                     food_name = image_result["labelName"]
+                    
+                    # Get allergen from Nyckel for image
+                    result = nyckel.invoke("food-allergens", food_name, credentials)
+                    detected_allergen = result["labelName"].strip().lower()
+                    confidence = result["confidence"]
                 elif scan.food_name:
                     food_name = scan.food_name
+                    
+                    # Get allergen from Gemini for text input
+                    import requests
+                    from django.conf import settings
+                    gemini_api_key = settings.GEMINI_API_KEY
+                    gemini_model = "gemini-3.5-flash-lite"
+                    url = f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:generateContent?key={gemini_api_key}"
+                    
+                    prompt = f"Analyze the food item '{food_name}'. What is the primary allergen present? Respond with ONLY the single word for the allergen (e.g. 'peanut', 'dairy', 'gluten'). If there are no common allergens, respond with 'none'."
+                    headers = {'Content-Type': 'application/json'}
+                    data = {"contents": [{"parts": [{"text": prompt}]}]}
+                    
+                    resp = None
+                    for attempt in range(3):
+                        resp = requests.post(url, headers=headers, json=data)
+                        if resp.status_code == 200:
+                            break
+                            
+                    if not resp or resp.status_code != 200:
+                        raise Exception(f"Gemini API error: {resp.text if resp else 'Unknown'}")
+                        
+                    resp_data = resp.json()
+                    detected_allergen = resp_data['candidates'][0]['content']['parts'][0]['text'].strip().lower()
+                    # Remove punctuation if Gemini included any
+                    detected_allergen = ''.join(c for c in detected_allergen if c.isalpha())
+                    
+                    if "none" in detected_allergen:
+                        detected_allergen = "none"
+                        confidence = 1.0
+                    else:
+                        confidence = 0.95  # Gemini is generally highly confident; set a fixed confidence for text input
+
                 else:
                     return Response({"error": "Provide either food_name or food_image."}, status=400)
-
-                # Get allergen from Nyckel
-                result = nyckel.invoke("food-allergens", food_name, credentials)
-                detected_allergen = result["labelName"].strip().lower()
-                confidence = result["confidence"]
 
                 # Normalize allergen to singular
                 singular_allergen = p.singular_noun(detected_allergen) or detected_allergen
@@ -559,7 +591,8 @@ class CreateTransactionView(APIView):
             email=user.email,
             amount=amount,
             user=user,
-            wallet=wallet
+            wallet=wallet,
+            request=request
         )
 
         if not paystack_response.get('status'):
@@ -585,18 +618,19 @@ class CreateTransactionView(APIView):
             "transaction": TransactionSerializer(transaction).data
         })
 
-    def initialize_paystack_payment(self, email, amount, user, wallet):
+    def initialize_paystack_payment(self, email, amount, user, wallet, request=None):
         """Helper method to initialize Paystack payment"""
         url = "https://api.paystack.co/transaction/initialize"
         headers = {
             "Authorization": f"Bearer {settings.PAYSTACK_SECRET_KEY}",
             "Content-Type": "application/json"
         }
+        callback_url = request.build_absolute_uri('/verify-payment/') if request else f"{settings.BASE_FRONTEND_URL}verify-payment/"
         payload = {
             "email": email,
             "amount": int(amount * 100),  # Paystack uses kobo
             "reference": f"DEP_{user.id}_{int(timezone.now().timestamp())}",
-            "callback_url": f"{settings.BASE_FRONTEND_URL}/verify-payment/",
+            "callback_url": callback_url,
             "metadata": {
                 "wallet_id": str(wallet.id),
                 "user_id": str(user.id)
@@ -631,32 +665,35 @@ def verify_payment(request):
             response = requests.get(url, headers=headers)
             data = response.json()
 
-            if not data.get('status') or data['data']['status'] != 'success':
+            if data.get('status') and data['data']['status'] == 'success':
+                transaction = Transaction.objects.filter(payment_reference=reference).first()
+                if transaction:
+                    if transaction.status != 'success':
+                        transaction.status = 'success'
+                        transaction.save()
+                        
+                        # Update wallet balance
+                        wallet = transaction.wallet
+                        wallet.user_balance += transaction.amount
+                        wallet.save()
+                    
+                    if request.method == 'GET':
+                        return render(request, 'medvaultapp/payment_success.html', {
+                            'amount': transaction.amount,
+                            'reference': reference
+                        })
+                    return JsonResponse({"status": "success"})
+                else:
+                    return JsonResponse(
+                        {"status": "failed", "message": "Transaction not found"},
+                        status=404
+                    )
+            else:
                 return JsonResponse(
-                    {"status": "failed", "message": "Payment verification failed"},
+                    {"status": "failed", "message": "Payment verification failed on Paystack"},
                     status=400
                 )
-
-            # Update transaction
-            transaction = Transaction.objects.get(
-                payment_reference=reference,
-                status='pending'
-            )
-            transaction.status = 'success'
-            transaction.save()
             
-            # Update wallet balance
-            wallet = transaction.wallet
-            wallet.user_balance += transaction.amount
-            wallet.save()
-            
-            return JsonResponse({"status": "success"})
-            
-        except Transaction.DoesNotExist:
-            return JsonResponse(
-                {"status": "failed", "message": "Transaction not found"},
-                status=404
-            )
         except Exception as e:
             return JsonResponse(
                 {"status": "failed", "message": str(e)},
@@ -799,34 +836,74 @@ class SendmessageToContact(APIView):
             hospital_msg = "\nNo nearby hospitals found within 10km."
 
         try:
-            account_sid = "AC6c3b2c0db38df21f3e82b670c0479633"
-            auth_token = "11477a65d6a274102154009f146a8c0d"
+            from django.conf import settings
+            account_sid = settings.TWILIO_ACCOUNT_SID
+            auth_token = settings.TWILIO_AUTH_TOKEN
+            from_phone = settings.TWILIO_PHONE_NUMBER
+            
             client = Client(account_sid, auth_token)
 
-            call = client.calls.create(
-                to=formatted_number,
-                from_='+18506730396',
-                twiml=f"<Response><Say voice='alice'>{voice_message}</Say></Response>"
-            )
+            # Send Email
+            try:
+                from django.core.mail import send_mail
+                
+                email_subject = f"EMERGENCY ALERT: Immediate Assistance Required for {user_name}"
+                email_body = f"Emergency Alert Details:\n\n{voice_message}\n{hospital_msg}"
+                
+                recipient_list = []
+                if request.user.email:
+                    recipient_list.append(request.user.email)
+                if hasattr(settings, 'ADMIN_EMAIL') and settings.ADMIN_EMAIL:
+                    if settings.ADMIN_EMAIL not in recipient_list:
+                        recipient_list.append(settings.ADMIN_EMAIL)
+                
+                if not recipient_list:
+                    recipient_list = [settings.DEFAULT_FROM_EMAIL]
+                
+                send_mail(
+                    subject=email_subject,
+                    message=email_body,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=recipient_list,
+                    fail_silently=False,
+                )
+                email_status = "Sent successfully"
+            except Exception as email_error:
+                print("Failed to send email:", email_error)
+                email_status = "Failed"
 
-            # sms = client.messages.create(
-            #     to=formatted_number,
-            #     from_='+12343393467',
-            #     body="EMERGENCY ALERT!\n" + voice_message + hospital_msg
-            # )
-            sms = client.messages.create(
-  messaging_service_sid='MGd438597bcf742c693cc07176a471cbf5',
-  body="EMERGENCY ALERT!\n" + voice_message + hospital_msg,
-  to=formatted_number
-)
+            # Send SMS (wrapped in try/except because Twilio trial accounts often block custom SMS)
+            try:
+                sms = client.messages.create(
+                    to=formatted_number,
+                    from_=from_phone,
+                    body="sms_appointment_reminders"  # Pre-approved template for Trial Accounts
+                )
+                sms_sid = sms.sid
+            except Exception as sms_error:
+                print("Failed to send SMS:", sms_error)
+                sms_sid = "Failed (Trial Account Restriction)"
+
+            # Initiate phone call (wrapped in try/except for Trial restrictions)
+            try:
+                call = client.calls.create(
+                    to=formatted_number,
+                    from_=from_phone,
+                    url="http://demo.twilio.com/docs/voice.xml"  # Generic Twilio voice for trial accounts
+                )
+                call_sid = call.sid
+            except Exception as call_error:
+                print("Failed to make call:", call_error)
+                call_sid = "Failed (Trial Account Restriction)"
+
 
             return Response({
-                "message": "Emergency alert sent successfully",
-                "sms_sid": sms.sid,
-                "call_sid": call.sid,
+                "message": "Emergency alert initiated. Call and email processed.",
+                "sms_sid": sms_sid,
+                "call_sid": call_sid,
+                "email_status": email_status,
                 "nearest_hospitals": hospital_list
             })
-            # print("nearest_hospitals:", hospital_list)
 
         except Exception as e:
             return Response({
@@ -1075,8 +1152,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from .serializers import EmergencyProfileSerializer
 
-
-client = OpenAI(api_key="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")
+from django.conf import settings
+client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
 # Initialize OpenAI client
 class GenerateHealthTipsAPIView(APIView):
@@ -1085,7 +1162,6 @@ class GenerateHealthTipsAPIView(APIView):
     serializer_class = EmergencyProfileSerializer
 
     def post(self, request, *args, **kwargs):
-        # Get the logged-in user's profile
         try:
             profile = request.user.emergencyprofile
         except AttributeError:
@@ -1094,34 +1170,42 @@ class GenerateHealthTipsAPIView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Serialize profile
         serializer = self.serializer_class(profile)
         profile_data = "\n".join([f"{k}: {v}" for k, v in serializer.data.items()])
 
-        # Prompt for AI
         prompt = f"""
         You are a medical assistant. Generate 3 short, safe, and general health tips 
         for a patient with the following profile:
 
         {profile_data}
 
-        Make the tips simple, practical, and easy to follow.
+        Make the tips simple, practical, and easy to follow. Return ONLY the tips separated by newlines, with no additional text or markdown formatting.
         """
 
         try:
-            # Call new OpenAI API (chat completion)
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",  # faster + cheaper, you can use gpt-4 if needed
-                messages=[
-                    {"role": "system", "content": "You are a helpful medical assistant."},
-                    {"role": "user", "content": prompt}
-                ],
-                max_tokens=200,
-                temperature=0.7
-            )
-
-            raw_text = response.choices[0].message.content.strip()
-            tips = [tip.strip(" -•") for tip in raw_text.split("\n") if tip.strip()]
+            import requests
+            gemini_api_key = settings.GEMINI_API_KEY
+            gemini_model = "gemini-3.5-flash-lite"
+            url = f"https://generativelanguage.googleapis.com/v1beta/models/{gemini_model}:generateContent?key={gemini_api_key}"
+            
+            headers = {'Content-Type': 'application/json'}
+            data = {
+                "contents": [{"parts": [{"text": prompt}]}]
+            }
+            
+            resp = None
+            for attempt in range(3):  # MAX_RETRIES = 2 (so 3 total attempts)
+                resp = requests.post(url, headers=headers, json=data)
+                if resp.status_code == 200:
+                    break
+            
+            if not resp or resp.status_code != 200:
+                raise Exception(f"Gemini API error: {resp.text if resp else 'Unknown'}")
+                
+            resp_data = resp.json()
+            raw_text = resp_data['candidates'][0]['content']['parts'][0]['text'].strip()
+            
+            tips = [tip.strip(" -•*") for tip in raw_text.split("\n") if tip.strip()]
 
             return Response(
                 {"profile": serializer.data, "tips": tips},
@@ -1130,3 +1214,56 @@ class GenerateHealthTipsAPIView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+from .models import FoodAllergyScan, Transaction
+
+class RecentActivitiesAPIView(APIView):
+    authentication_classes = [JWTAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        activities = []
+        user = request.user
+
+        # Get recent food scans
+        scans = FoodAllergyScan.objects.filter(user=user).order_by('-created_at')[:10]
+        for scan in scans:
+            title = f"Food Scan: {scan.food_name}" if scan.food_name else "Food Scan: Image"
+            desc = f"Allergen: {scan.detected_allergen}" if scan.detected_allergen else "No allergens detected"
+            color = "#ef4444" if scan.risk_level == "high" else ("#f59e0b" if scan.risk_level == "medium" else "#10b981")
+            
+            activities.append({
+                "id": f"scan_{scan.id}",
+                "type": "scan",
+                "title": title,
+                "description": desc,
+                "timestamp": scan.created_at.isoformat(),
+                "icon": "qr-code-scanner",
+                "color": color
+            })
+
+        # Get recent transactions
+        try:
+            transactions = Transaction.objects.filter(wallet__user=user).order_by('-created_at')[:10]
+            for txn in transactions:
+                is_credit = txn.transaction_type.lower() == 'credit'
+                symbol = "+" if is_credit else "-"
+                color = "#10b981" if is_credit else "#ef4444"
+                title = "Wallet Deposit" if is_credit else "Wallet Withdrawal"
+                
+                activities.append({
+                    "id": f"txn_{txn.id}",
+                    "type": "transaction",
+                    "title": title,
+                    "description": f"{symbol}₦{txn.amount} - {txn.status}",
+                    "timestamp": txn.created_at.isoformat(),
+                    "icon": "account-balance-wallet",
+                    "color": color
+                })
+        except Exception:
+            pass  # User might not have a wallet yet
+
+        # Sort combined activities by timestamp descending
+        activities.sort(key=lambda x: x["timestamp"], reverse=True)
+
+        return Response(activities[:10], status=status.HTTP_200_OK)

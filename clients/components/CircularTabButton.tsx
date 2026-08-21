@@ -29,7 +29,7 @@ export function CircularTabButton({
           height: 70,
           borderRadius: 35,
           paddingTop: 10,
-          backgroundColor: "#b9b9e3",
+          backgroundColor: "#009b7c",
           justifyContent: "center",
           alignItems: "center",
           marginBottom: 35, // Elevates the circle above the tab bar

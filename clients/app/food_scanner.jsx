@@ -127,7 +127,7 @@ const ScanFoodScreen = () => {
           <MaterialIcons 
             name="photo-library" 
             size={20} 
-            color={activeTab === 'image' ? '#a855f7' : '#6b7280'} 
+            color={activeTab === 'image' ? '#009b7c' : '#6b7280'} 
           />
           <Text style={[
             styles.tabText,
@@ -147,7 +147,7 @@ const ScanFoodScreen = () => {
           <MaterialIcons 
             name="text-fields" 
             size={20} 
-            color={activeTab === 'text' ? '#a855f7' : '#6b7280'} 
+            color={activeTab === 'text' ? '#009b7c' : '#6b7280'} 
           />
           <Text style={[
             styles.tabText,
@@ -165,7 +165,7 @@ const ScanFoodScreen = () => {
             <MaterialIcons 
               name={image ? "image" : "photo-library"} 
               size={24} 
-              color="#a855f7" 
+              color="#009b7c" 
             />
             <Text style={styles.uploadButtonText}>
               {image ? "Change Image" : "Select Food Image"}
@@ -380,7 +380,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   activeTabText: {
-    color: '#a855f7',
+    color: '#009b7c',
   },
   tabContent: {
     marginHorizontal: 24,
@@ -430,11 +430,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#a855f7',
+    borderColor: '#009b7c',
     gap: 12,
   },
   uploadButtonText: {
-    color: '#a855f7',
+    color: '#009b7c',
     fontSize: 16,
     fontWeight: '600',
   },
@@ -463,13 +463,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#a855f7',
+    backgroundColor: '#009b7c',
     paddingVertical: 16,
     borderRadius: 12,
     marginHorizontal: 24,
     marginBottom: 24,
     gap: 12,
-    shadowColor: '#a855f7',
+    shadowColor: '#009b7c',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

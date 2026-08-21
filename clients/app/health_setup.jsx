@@ -51,6 +51,27 @@ const HealthSetupScreen = () => {
 
   const router = useRouter();
 
+  React.useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await api.get("/api/emergency-profile/");
+        if (response.data) {
+          setHealthData(prev => ({
+            ...prev,
+            ...response.data,
+            weight: response.data.weight ? response.data.weight.toString() : ""
+          }));
+        }
+      } catch (error) {
+        // If 404, it means the profile doesn't exist yet, which is fine for new users
+        if (error?.response?.status !== 404) {
+          console.log("Error fetching profile:", error);
+        }
+      }
+    };
+    fetchProfile();
+  }, []);
+
   const updateHealthData = useCallback((field, value) => {
     setHealthData((prev) => ({
       ...prev,
@@ -220,7 +241,7 @@ const HealthSetupScreen = () => {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <View style={[styles.sectionIcon, { backgroundColor: '#f5f3ff' }]}>
-              <MaterialIcons name="fitness-center" size={20} color="#8b5cf6" />
+              <MaterialIcons name="fitness-center" size={20} color="#009b7c" />
             </View>
             <Text style={styles.sectionTitle}>Lifestyle</Text>
           </View>
@@ -355,12 +376,12 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
   },
   continueButton: {
-    backgroundColor: "#a855f7",
+    backgroundColor: "#009b7c",
     borderRadius: 12,
     padding: 16,
     alignItems: "center",
     marginTop: 16,
-    shadowColor: "#a855f7",
+    shadowColor: "#009b7c",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.3,
     shadowRadius: 8,

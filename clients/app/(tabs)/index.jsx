@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from "expo-router";
 import { useUserData } from '@/hooks/useUserData';
 import React from "react";
+import api from "@/assets/api";
 
 
 
@@ -25,8 +26,8 @@ const carouselData = [
     text: "Share your QR code in emergency",
     subtitle: "Quick medical access",
     icon: <MaterialIcons name="qr-code" size={40} color="#fff" />,
-    gradient: ['#a855f7', '#c084fc'],
-    backgroundColor: '#a855f7'
+    gradient: ['#009b7c', '#009b7c'],
+    backgroundColor: '#009b7c'
   },
   {
     text: "Save for time in need",
@@ -37,46 +38,12 @@ const carouselData = [
   },
 ];
 
-const recentActivities = [
-  {
-    title: "Scanned pasta dish",
-    subtitle: "Found: Gluten, Dairy",
-    time: "2 hours ago",
-    icon: <MaterialIcons name="restaurant" size={20} color="#ff6b6b" />,
-    iconBg: '#ffe5e5'
-  },
-  {
-    title: "Updated medical info",
-    subtitle: "Blood type, allergies",
-    time: "1 day ago",
-    icon: <MaterialIcons name="medical-services" size={20} color="#10b981" />,
-    iconBg: '#d1fae5'
-  },
-  {
-    title: "Emergency contact added",
-    subtitle: "Dr. Sarah Johnson",
-    time: "3 days ago",
-    icon: <MaterialIcons name="contact-phone" size={20} color="#3b82f6" />,
-    iconBg: '#dbeafe'
-  },
-  {
-    title: "Medication reminder",
-    subtitle: "Took daily vitamins",
-    time: "1 week ago",
-    icon: <MaterialIcons name="medication" size={20} color="#8b5cf6" />,
-    iconBg: '#ede9fe'
-  },
-  {
-    title: "Health report generated",
-    subtitle: "Monthly summary",
-    time: "2 weeks ago",
-    icon: <MaterialIcons name="assessment" size={20} color="#f59e0b" />,
-    iconBg: '#fef3c7'
-  }
-];
+// Removed hardcoded recentActivities
 
 export default function HomeScreen() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [loadingActivities, setLoadingActivities] = useState(true);
   const flatListRef = useRef(null);
   const router = useRouter()
 
@@ -101,14 +68,48 @@ export default function HomeScreen() {
 
 
 useEffect(() => {
-  const checkToken = async () => {
+  const checkTokenAndFetch = async () => {
     const token = await AsyncStorage.getItem('access_token');
     if (!token) {
       router.push("/login");
+    } else {
+      fetchActivities();
     }
   };
-  checkToken();
+  checkTokenAndFetch();
 }, []);
+
+const fetchActivities = async () => {
+  try {
+    const response = await api.get('/api/recent-activities/');
+    if (response.data && response.data.activities) {
+      setRecentActivities(response.data.activities);
+    } else {
+      setRecentActivities(response.data || []);
+    }
+  } catch (error) {
+    console.error("Error fetching recent activities:", error);
+  } finally {
+    setLoadingActivities(false);
+  }
+};
+
+// Helper for time ago formatting
+const timeAgo = (dateStr) => {
+  const date = new Date(dateStr);
+  const seconds = Math.floor((new Date() - date) / 1000);
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " years ago";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " months ago";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " days ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + " hours ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + " minutes ago";
+  return Math.floor(seconds) + " seconds ago";
+};
 
 
   useEffect(() => {
@@ -224,7 +225,7 @@ useEffect(() => {
               style={[
                 styles.paginationDot,
                 {
-                  backgroundColor: currentIndex === index ? '#a855f7' : '#374151',
+                  backgroundColor: currentIndex === index ? '#009b7c' : '#374151',
                   width: currentIndex === index ? 24 : 8,
                 }
               ]}
@@ -241,18 +242,37 @@ useEffect(() => {
           </TouchableOpacity>
         </View>
         
-        {recentActivities.map((activity, index) => (
-          <TouchableOpacity key={index} style={styles.activityCard}>
-            <View style={[styles.activityIcon, { backgroundColor: activity.iconBg }]}>
-              {activity.icon}
-            </View>
-            <View style={styles.activityContent}>
-              <Text style={styles.activityTitle}>{activity.title}</Text>
-              <Text style={styles.activitySubtitle}>{activity.subtitle}</Text>
-            </View>
-            <Text style={styles.activityTime}>{activity.time}</Text>
-          </TouchableOpacity>
-        ))}
+        {loadingActivities ? (
+          <Text style={{ color: '#9ca3af', textAlign: 'center', marginVertical: 20 }}>Loading activities...</Text>
+        ) : recentActivities.length === 0 ? (
+          <Text style={{ color: '#9ca3af', textAlign: 'center', marginVertical: 20 }}>No recent activities found.</Text>
+        ) : (
+          recentActivities.map((activity, index) => {
+            // Support both old dummy format (if needed) and new backend format
+            const iconName = activity.icon || (activity.iconBg ? "event" : "circle");
+            // Determine icon color, fallback to teal
+            const iconColor = activity.color || "#009b7c"; 
+            // Create a slightly transparent background for the icon
+            const iconBg = activity.iconBg || (iconColor + "20"); 
+            
+            return (
+              <TouchableOpacity key={activity.id || index} style={styles.activityCard}>
+                <View style={[styles.activityIcon, { backgroundColor: iconBg }]}>
+                  {typeof activity.icon === 'object' ? (
+                    activity.icon
+                  ) : (
+                    <MaterialIcons name={iconName} size={20} color={iconColor} />
+                  )}
+                </View>
+                <View style={styles.activityContent}>
+                  <Text style={styles.activityTitle}>{activity.title}</Text>
+                  <Text style={styles.activitySubtitle}>{activity.description || activity.subtitle}</Text>
+                </View>
+                <Text style={styles.activityTime}>{activity.timestamp ? timeAgo(activity.timestamp) : activity.time}</Text>
+              </TouchableOpacity>
+            );
+          })
+        )}
       </View>
     </ScrollView>
   );
@@ -376,7 +396,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
   viewAllText: {
-    color: "#a855f7",
+    color: "#009b7c",
     fontSize: 14,
     fontWeight: "600",
   },

@@ -21,13 +21,20 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#b9b9e3",
+        tabBarActiveTintColor: "#009b7c",
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
-          backgroundColor: "#0d0c0f",
-          height: 60,
-          borderWidth: 0
+          backgroundColor: "#0f0f14",
+          height: 70,
+          borderTopWidth: 1,
+          borderTopColor: '#374151',
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOpacity: 0.2,
+          shadowRadius: 10,
+          paddingBottom: 10,
+          paddingTop: 10,
         }
       }}>
       <Tabs.Screen
@@ -68,6 +75,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <FontAwesome name="bank" size={28} color={color} />,
         }}
       />
+      <Tabs.Screen
+        name="gethealthtips"
+        options={{
+          title: 'Health Tips',
+          tabBarIcon: ({ color }) => <FontAwesome name="heartbeat" size={28} color={color} />,
+        }}
+      />
     </Tabs>
   );
 }
@@ -83,7 +97,7 @@ export default function TabLayout() {
 // const _layout = () => {
 //   return (
 //     <Tabs screenOptions={{
-//       tabBarActiveTintColor: "#b9b9e3",
+//       tabBarActiveTintColor: "#009b7c",
 //       headerShown: false,
 //       tabBarButton: HapticTab,
 //       tabBarStyle: {

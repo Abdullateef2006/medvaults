@@ -54,7 +54,7 @@ const quickSettings = [
     title: "Help & Support",
     subtitle: "Get help or contact us",
     icon: "help-outline",
-    color: "#8b5cf6",
+    color: "#009b7c",
     bgColor: "#ede9fe"
   }
 ];
@@ -96,7 +96,7 @@ export default function ProfileScreen() {
           </TouchableOpacity> */}
           <Text style={styles.headerTitle}>Profile</Text>
           <TouchableOpacity style={styles.editButton}>
-            <MaterialIcons name="edit" size={24} color="#a855f7" />
+            <MaterialIcons name="edit" size={24} color="#009b7c" />
           </TouchableOpacity>
         </View>
 
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: '#a855f7',
+    backgroundColor: '#009b7c',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 3,
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   },
   username: {
     fontSize: 16,
-    color: '#a855f7',
+    color: '#009b7c',
     marginBottom: 4,
   },
   email: {

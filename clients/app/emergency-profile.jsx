@@ -133,7 +133,7 @@ function EmergencyProfileScreen() {
     {
       title: 'Lifestyle',
       icon: 'fitness-center',
-      color: '#8b5cf6',
+      color: '#009b7c',
       bgColor: '#f5f3ff',
       items: [
         { label: 'Dietary Restrictions', value: profile.dietary_restrictions, icon: 'restaurant' },
@@ -150,17 +150,25 @@ function EmergencyProfileScreen() {
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View style={styles.header}>
-          {/* <Link href="/profile" asChild> */}
           <TouchableOpacity style={styles.backButton} onPress={() => {
             router.back()
             }}>
               <Ionicons name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
-          {/* </Link> */}
+          
           <Text style={styles.headerTitle}>Emergency Profile</Text>
-          <TouchableOpacity style={styles.shareButton} onPress={handleShare}>
-            <MaterialIcons name="share" size={24} color="#a855f7" />
-          </TouchableOpacity>
+          
+          <View style={styles.headerRight}>
+            <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/(tabs)')}>
+              <MaterialIcons name="dashboard" size={20} color="#009b7c" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerButton} onPress={() => router.push('/health_setup')}>
+              <MaterialIcons name="edit" size={20} color="#009b7c" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerButton} onPress={handleShare}>
+              <MaterialIcons name="share" size={20} color="#009b7c" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         {/* Banner */}
@@ -181,7 +189,7 @@ function EmergencyProfileScreen() {
             <Text style={styles.actionButtonText}>Call Contact</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.actionButton, { backgroundColor: '#a855f7' }]}
+            style={[styles.actionButton, { backgroundColor: '#009b7c' }]}
             onPress={handleGenerateQR}
             disabled={isGeneratingQR}
           >
@@ -281,10 +289,14 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#fff',
   },
-  shareButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  headerRight: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  headerButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: '#1f2937',
     alignItems: 'center',
     justifyContent: 'center',

@@ -1,7 +1,7 @@
 # ===== server (Django) =====
-server/__pycache__/
-server/*.pyc
-server/*.pyo
+**/__pycache__/
+**/*.pyc
+**/*.pyo
 # server/db.sqlite3
 # server/*.sqlite3
 server/media/

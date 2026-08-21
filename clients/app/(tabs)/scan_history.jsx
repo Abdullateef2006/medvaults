@@ -105,7 +105,7 @@ const ScanHistoryScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#a855f7" />
+        <ActivityIndicator size="large" color="#009b7c" />
         <Text style={styles.loadingText}>Loading scan history...</Text>
       </View>
     );
@@ -128,9 +128,9 @@ const ScanHistoryScreen = () => {
           disabled={refreshing}
         >
           {refreshing ? (
-            <ActivityIndicator size="small" color="#a855f7" />
+            <ActivityIndicator size="small" color="#009b7c" />
           ) : (
-            <Ionicons name="refresh" size={20} color="#a855f7" />
+            <Ionicons name="refresh" size={20} color="#009b7c" />
           )}
         </TouchableOpacity>
       </View>
@@ -167,7 +167,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f0f14',
   },
   loadingText: {
-    color: '#b9b9e3',
+    color: '#009b7c',
     marginTop: 16,
   },
   header: {
