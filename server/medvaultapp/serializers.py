@@ -90,8 +90,8 @@ class WalletSerializer(serializers.ModelSerializer):
 class TransactionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Transaction
-        fields = ['id', 'amount', 'transaction_type', 'created_at', 'status']
-        read_only_fields = ['id', 'created_at', 'transaction_type', 'status',]
+        fields = ['id', 'amount', 'transaction_type', 'created_at', 'status', 'payment_reference']
+        read_only_fields = ['id', 'created_at', 'transaction_type', 'status', 'payment_reference']
         
 class HospitalSerializer(serializers.ModelSerializer):
     class Meta:

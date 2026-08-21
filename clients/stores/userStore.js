@@ -2,17 +2,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import api from '@/assets/api';
-// stores/userStore.js
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-// ... in the persist config:
-persist(
-  // ... your store setup
-  {
-    name: 'user-storage',
-    storage: createJSONStorage(() => AsyncStorage),
-  }
-)
 
 export const useUserStore = create(
   persist(

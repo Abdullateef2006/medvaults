@@ -39,7 +39,7 @@ export const CustomTabBar = ({ state, descriptors, navigation }: any) => {
             <TabButton
               key={route.key}
               onPress={onPress}
-              icon={options.tabBarIcon({ color: isFocused ? '#b9b9e3' : '#6b7280' })}
+              icon={options.tabBarIcon({ color: isFocused ? '#009b7c' : '#6b7280' })}
               label={options.title || route.name}
               isFocused={isFocused}
             />
@@ -140,14 +140,14 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Medium',
   },
   labelFocused: {
-    color: '#b9b9e3',
+    color: '#009b7c',
   },
   activeIndicator: {
     position: 'absolute',
     bottom: 10,
     height: 3,
     width: 20,
-    backgroundColor: '#a855f7',
+    backgroundColor: '#009b7c',
     borderRadius: 2,
   },
   scanButtonContainer: {
@@ -158,7 +158,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0d0c0f',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#a855f7',
+    shadowColor: '#009b7c',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#a855f7',
+    backgroundColor: '#009b7c',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#a855f7',
+    backgroundColor: '#009b7c',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,

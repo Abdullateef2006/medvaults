@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment Successful - MedVault</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background-color: #0f0f14;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .card {
+            background-color: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        .icon-container {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(16, 185, 129, 0.15);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 24px;
+        }
+        .checkmark {
+            color: #10b981;
+            font-size: 40px;
+            font-weight: bold;
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #ffffff;
+        }
+        p {
+            color: #9ca3af;
+            font-size: 15px;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
+        .amount {
+            color: #10b981;
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 24px;
+        }
+        .btn {
+            display: inline-block;
+            width: 100%;
+            padding: 16px;
+            background-color: #a855f7;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            border-radius: 12px;
+            transition: background 0.2s ease;
+        }
+        .btn:hover {
+            background-color: #9333ea;
+        }
+        .reference {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="icon-container">
+            <span class="checkmark">✓</span>
+        </div>
+        <h1>Payment Successful!</h1>
+        <p>Your deposit has been verified and added to your MedVault wallet balance.</p>
+        <div class="amount">₦{{ amount }}</div>
+        
+        <a href="clients://save_money" class="btn">Return to MedVault App</a>
+        
+        <div class="reference">Reference: {{ reference }}</div>
+    </div>
+
+    <script>
+        // Attempt automatic deep link redirect to open Expo app
+        setTimeout(function() {
+            window.location.href = "clients://save_money";
+        }, 1200);
+    </script>
+</body>
+</html>

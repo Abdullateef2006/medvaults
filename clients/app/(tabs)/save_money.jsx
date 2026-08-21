@@ -218,7 +218,7 @@ const WalletScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#a855f7" />
+        <ActivityIndicator size="large" color="#009b7c" />
         <Text style={styles.loadingText}>Loading wallet...</Text>
       </View>
     );
@@ -246,7 +246,7 @@ const WalletScreen = () => {
           <Text style={styles.headerSubtitle}>Account: {wallet.wallet_name}</Text>
         </View>
         <TouchableOpacity style={styles.refreshButton} onPress={fetchWallet}>
-          <Ionicons name="refresh" size={20} color="#a855f7" />
+          <Ionicons name="refresh" size={20} color="#009b7c" />
         </TouchableOpacity>
       </View>
 
@@ -536,7 +536,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f0f14',
   },
   loadingText: {
-    color: '#b9b9e3',
+    color: '#009b7c',
     marginTop: 16,
   },
   emptyWalletContainer: {
@@ -652,7 +652,7 @@ const styles = StyleSheet.create({
     color: 'white',
   },
   viewAllText: {
-    color: '#a855f7',
+    color: '#009b7c',
     fontSize: 14,
     fontWeight: '600',
   },
@@ -662,7 +662,7 @@ const styles = StyleSheet.create({
   monthHeader: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#b9b9e3',
+    color: '#009b7c',
     marginBottom: 12,
   },
   transactionCard: {

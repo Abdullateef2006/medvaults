@@ -269,18 +269,18 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   forgotPasswordText: {
-    color: '#a855f7',
+    color: '#009b7c',
     fontSize: 14,
     fontWeight: '600',
   },
   loginButton: {
-    backgroundColor: '#a855f7',
+    backgroundColor: '#009b7c',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 24,
-    shadowColor: '#a855f7',
+    shadowColor: '#009b7c',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
@@ -351,7 +351,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   biometricText: {
-    color: '#a855f7',
+    color: '#009b7c',
     fontSize: 14,
     fontWeight: '600',
     marginTop: 8,
@@ -365,7 +365,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   signUpText: {
-    color: '#a855f7',
+    color: '#009b7c',
     fontWeight: '600',
   },
   tipsContainer: {

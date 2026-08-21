@@ -351,8 +351,12 @@ export default function ShakeDetector() {
 
     try {
       Vibration.vibrate([0, 250, 100, 250]);
+      
+      // Activate QR code independently so it works even if SMS/email fails
+      triggerQRCodeActivation().catch(e => console.error('QR activation failed independently:', e));
+      
+      // Send emergency alert
       await SendEmergencyAlert();
-      await triggerQRCodeActivation(); // Call activation here as well
     } catch (error) {
       console.error('Alert sending failed:', error);
     } finally {
